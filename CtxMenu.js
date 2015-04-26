@@ -149,14 +149,15 @@ var Manager = (function() {
     Pane.createPane(this);
     Pane.buildPane(this, opt.items);
   };
+
   /**
     @typedef Pane
     @type {object}
     @property {Object.<string, Menu>} menus
     @property {string} id - maps to the menu key on the previous layer (except it is the root pane)
     @property {jqElem} mPane - element that houses the menus
-    @property {bool} shown - flag indicate if it is currently shown
-    @property {CtxMenu} context - managed by which context manager
+    @property {bool} shown - flag indicating if it is currently shown
+    @property {CtxMenu} context
     @property {string} curr - currently selceted menu key
   */
   Pane.prototype = {
@@ -267,23 +268,19 @@ var Manager = (function() {
       }
     };
 
-    paneObj.menus[mkey] = new Menu(item, opt, {
-      pane: paneObj,
-      funcObj: funcObj
-    });
-    paneObj.context.menuMap[mkey] = paneObj.id;
-
-    return paneObj.menus[mkey];
+    return new Menu(item, opt, { pane: paneObj, funcObj: funcObj });
   };
 
-  // build up the whole pane menus
-  Pane.buildPane = function(paneObj, items) {
-    var frag = $(document.createDocumentFragment()),
-      menuObj;
-    items.forEach(function(m) {
-      menuObj = Pane.createMenu(paneObj, m);
-      frag.append(menuObj.mItem);
-    });
+  // build pane by the given parsed menu config
+  Pane.buildPane = function(paneObj, cmenus) {
+    var frag = $(document.createDocumentFragment()), k;
+
+    for(k in cmenus) {
+      paneObj.context.menuMap[k] = paneObj.id;
+      paneObj.menus[k] = Pane.createMenu(paneObj, cmenus[k]);
+      frag.append(paneObj.menus[k].mItem);
+    }
+
     paneObj.mPane.append(frag);
   };
 
@@ -316,6 +313,7 @@ var Manager = (function() {
 
     this.rootPane = this.panes[this.rootId];
   };
+
   CtxMenu.prototype = {
     target: null,
     rootPane: null,
@@ -407,22 +405,28 @@ var Manager = (function() {
       ele.hide();
       return ele;
     },
-    // parse the given options
+    /**
+     *  parse the given option items
+     *  @param {{menukey:menuObj},...} items
+     *  @param {string} belonging key of menupane
+     *  @param {string} key of the previous layer
+     */
     parseOptionItems: function(items, key, prev) {
-      var _self = this,
-        c = _self.c[key] = {
-          items: [],
-          prev: prev
-        },
-        conf;
+      var ctx = this; // CtxMenu instance
+      var conf, c ;
+      c = ctx.c[key] = {
+        items: {},
+        prev: prev  // null if it is the root pane
+      };
 
-      items.forEach(function(m) {
-        conf = CtxMenu.extractConfig(m, prev);
-        if (conf.hasNext) {
-          _self.parseOptionItems.call(_self, m.items, m.key, key);
+      Object.keys(items).forEach(function(sk) {
+        conf = CtxMenu.extractConfig(sk, items[sk]);
+        if(conf.hasNext) {
+          ctx.parseOptionItems.call(ctx, items[sk].items, sk, key);
         }
-        c.items.push(conf);
+        c.items[sk] = conf;
       });
+
     },
     // active context menu at the given position
     active: function(pos) {
@@ -466,7 +470,6 @@ var Manager = (function() {
       });
     }
   };
-
   CtxMenu.processRightClick = function(ctxmenu, e) {
     var target = e.target;
     var excludeObj = ctxmenu.excludeObj;
@@ -539,23 +542,26 @@ var Manager = (function() {
       ele = ctxmenu.activeStackPop();
     }
   };
-  CtxMenu.extractConfig = function(m) {
+
+  // parse menu options
+  CtxMenu.extractConfig = function(mkey, m) {
     var disable = m.disable ? m.disable : false;
+
     // has sublayer
-    if (m.items) {
+    if(m.items) {
       return {
         text: m.text,
-        key: m.key,
+        key:mkey,
         hasNext: true,
         disable: disable
       };
     }
 
-    m.action = m.action || null;
-    return {
+    // regular menu item
+    return  {
       text: m.text,
-      key: m.key,
-      action: m.action,
+      key:mkey,
+      action: m.action||null,
       disable: disable
     };
   };
