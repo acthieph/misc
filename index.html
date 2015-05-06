@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MISC</title>
+  <script src="jquery.js"></script>
+  <script src="CtxMenu.js"></script>
+
+  <link href="ctxmenu.css" rel="stylesheet">
+  <style>
+    * {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+         box-sizing: border-box;
+    }
+    html, section, div, h1 { padding: 0; margin: 0;}
+    body { padding: 5px 5%; background: #FBFBEF;}
+    section.sec {
+      border: 1px solid #eee;
+      border-bottom: 2px solid #ccc;
+      min-height: 150px;
+      padding: 5px 8px;
+    }
+    section.sec h3 {font-family: monospace; color: green;}
+    div.rect {
+      width:50%; height: 80px;
+      padding: 6px 3px; border: 1px solid orange;
+      color: #61210B;
+      background-color: #F5DA81;
+      margin: 6px 5px;
+      margin-left: 25%;
+    }
+    .fill {width:90%; display: inline-block; margin-top: 3px;}
+
+  </style>
+</head>
+<body>
+  <section class="ctxmenu-demo sec">
+    <h3>test context-menu here</h3>
+    <div class="noctx rect">No context-menu here</div>
+    <div class="rect">
+      <input class='fill' type="text" placeholder='native context-menu here' />
+      <textarea class='fill' name="txtarea" style='resize:none;' cols="30" rows="3">native context-menu here, too</textarea>
+    </div>
+
+  </section>
+
+</body>
+<script>
+function bindContextmenu() {
+  var node = $('.ctxmenu-demo');
+  var config = {
+    items: {
+      cut: {text: '剪下'},
+      cpoy:{text: '複製'},
+      sep1:{},
+      paste: {text: '貼上'},
+      pasetspecial: {text: '選擇性貼上',
+        items:{
+          pastevalue:{text:'僅貼上值'},
+          pasteformat:{text:'僅貼上格式', action:function() { press('pasteformat');} },
+          pastexborder:{text:'全部貼上但框線除外'},
+          pastefomula:{text:'僅貼上公式'}
+        }
+      },
+      sep2:{},
+      del: {text: '刪除...', disable:true},
+      clear: {text: '清除內容'}
+    },
+
+    // global exception list
+    keepnative:{
+      tags: ['INPUT', 'TEXTAREA']
+    }
+  };
+
+  var cmMain = Manager.add('cm-main', config);
+
+  cmMain.bindTarget('.ctxmenu-demo', {
+    excep:{tags:['INPUT', 'TEXTAREA'], classes:['excep']},
+    noctxmenu:{classes:['noctx']}
+  });
+
+  cmMain.setMenuEnable('clear', false);
+}
+
+bindContextmenu();
+
+</script>
+</html>
