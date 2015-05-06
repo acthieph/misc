@@ -229,11 +229,11 @@ var Manager = (function() {
 
     // browser width and height
     var bWidth = $('body').width(),
-      bHeight = document.documentElement.clientHeight;
+        bHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight) - 8;  // leave 8px space
 
     // pane width
-    var mWidth = ctxmenuElem.width(),
-      mHeight = ctxmenuElem.height();
+    var mWidth = ctxmenuElem.outerWidth(true),
+      mHeight = ctxmenuElem.outerHeight();
 
     // pWidth: width of the previous layer
     // sHeightMove: adjustment height on submenu
