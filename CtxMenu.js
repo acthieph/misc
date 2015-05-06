@@ -24,7 +24,6 @@ var Manager = (function() {
     classes: []
   };
 
-
   function returnFalse() {
     return false;
   }
@@ -247,10 +246,23 @@ var Manager = (function() {
     }
 
     pos.left = (pos.left + mWidth + pWidth > bWidth) ? (pos.left - mWidth < 0 ? 0 : pos.left - mWidth) : pos.left + pWidth;
-    pos.top = (pos.top + mHeight > bHeight) ? (pos.top - mHeight + sHeightMove < 0 ? 0 : pos.top - mHeight + sHeightMove) : pos.top;
+    // pos.top = (pos.top + mHeight > bHeight) ? (pos.top - mHeight + sHeightMove < 0 ? 0 : pos.top - mHeight + sHeightMove) : pos.top;
+
+    if(pos.top + mHeight > bHeight) {
+
+      if(pos.top - mHeight + sHeightMove > 0) {
+        pos.top = pos.top - mHeight + sHeightMove;
+      }
+      else {
+        pos.top = 1;
+        ctxmenuElem.css({maxHeight:(bHeight-sHeightMove-2)+'px', overflowY:'auto'});
+      }
+    }
+    else {
+      ctxmenuElem.css({maxHeight:''});
+    }
 
     ctxmenuElem.css(pos).show();
-
     paneObj.shown = true;
   };
   // @returns {Menu}
@@ -276,9 +288,16 @@ var Manager = (function() {
     var frag = $(document.createDocumentFragment()), k;
 
     for(k in cmenus) {
-      paneObj.context.menuMap[k] = paneObj.id;
-      paneObj.menus[k] = Pane.createMenu(paneObj, cmenus[k]);
-      frag.append(paneObj.menus[k].mItem);
+
+      if(cmenus[k].sep) { // add separator
+        $('<div>', {class:'cm-sep'}).appendTo(frag);
+      }
+      else {  // normal item
+        paneObj.context.menuMap[k] = paneObj.id;
+        paneObj.menus[k] = Pane.createMenu(paneObj, cmenus[k]);
+        frag.append(paneObj.menus[k].mItem);
+      }
+
     }
 
     paneObj.mPane.append(frag);
@@ -413,17 +432,24 @@ var Manager = (function() {
      */
     parseOptionItems: function(items, key, prev) {
       var ctx = this; // CtxMenu instance
-      var conf, c ;
+      var conf, c;
       c = ctx.c[key] = {
         items: {},
         prev: prev  // null if it is the root pane
       };
 
-      Object.keys(items).forEach(function(sk) {
-        conf = CtxMenu.extractConfig(sk, items[sk]);
-        if(conf.hasNext) {
-          ctx.parseOptionItems.call(ctx, items[sk].items, sk, key);
+      Object.keys(items).forEach(function(sk, idx) {
+
+        if(/^sep/.test(sk)) { // separator
+          conf = {sep:true};
         }
+        else {
+          conf = CtxMenu.extractConfig(sk, items[sk]);
+          if(conf.hasNext) {
+            ctx.parseOptionItems.call(ctx, items[sk].items, sk, key);
+          }
+        }
+
         c.items[sk] = conf;
       });
 

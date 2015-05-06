@@ -24,20 +24,28 @@
     outline: none;
 }
 
+/* menu separator */
+.ctx-menu .cm-sep {
+    border-top: 1px solid #ebebeb;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
 /* menu item */
-.ctx-menu > div {
+.ctx-menu .cm-item {
     width: 100%;
-    padding: 6px 5em 6px 16px;
+    padding: 6px 5rem 6px 16px;
     color: #333;
     cursor: pointer;
     margin: 0;
     white-space: nowrap;
 }
-.ctx-menu > div a {
+
+.ctx-menu .cm-item a {
     display: block;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
 }
-.ctx-menu > div:hover {
+.ctx-menu .cm-item:hover {
     background-color: #eee;
     border-color: #eee;
     border-style: dotted;
@@ -45,15 +53,15 @@
     padding-top: 5px;
     padding-bottom: 5px
 }
-.ctx-menu > div.disabled,
-.ctx-menu > div.disabled:hover{
+.ctx-menu .cm-item.disabled,
+.ctx-menu .cm-item.disabled:hover{
     color: #ccc;
     cursor: default;
     background: #fff;
     border: none;
-    padding: 6px 5em 6px 16px;
+    padding: 6px 5rem 6px 16px;
 }
-.ctx-menu > div[data-msub] a::after {
+.ctx-menu .cm-item[data-msub] a::after {
     content: '';
     position: absolute;
     width: 0; height: 0;
@@ -64,6 +72,6 @@
     opacity: .8;
     filter: alpha(opacity=80);
 }
-.ctx-menu > div[data-msub]:hover a::after {
+.ctx-menu .cm-item[data-msub]:hover a::after {
     border-left-color: #000;
 }
