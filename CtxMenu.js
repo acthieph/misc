@@ -239,7 +239,7 @@ var Manager = (function() {
     // sHeightMove: adjustment height on submenu
     var pWidth, sHeightMove;
     if (preWidth && preWidth > 0) {
-      sHeightMove = 25;
+      sHeightMove = 10;
       pWidth = preWidth - 1;
     } else {
       pWidth = sHeightMove = 0;
@@ -289,15 +289,13 @@ var Manager = (function() {
 
     for(k in cmenus) {
 
+      paneObj.context.menuMap[k] = paneObj.id;
+      paneObj.menus[k] = Pane.createMenu(paneObj, cmenus[k]);
+      frag.append(paneObj.menus[k].mItem);
+
       if(cmenus[k].sep) { // add separator
         $('<div>', {class:'cm-sep'}).appendTo(frag);
       }
-      else {  // normal item
-        paneObj.context.menuMap[k] = paneObj.id;
-        paneObj.menus[k] = Pane.createMenu(paneObj, cmenus[k]);
-        frag.append(paneObj.menus[k].mItem);
-      }
-
     }
 
     paneObj.mPane.append(frag);
@@ -319,9 +317,15 @@ var Manager = (function() {
     this.isActive = false;
     this.menuMap = {};
 
+    this.cond = false;   // constraint condition
+
     // use native contextmenu when right-clicks on the specified selectors
     if (opt.keepnative) {
       CtxMenu.g_KeepNative(opt.keepnative);
+    }
+
+    if(opt.cond) {
+      this.cond = true;
     }
 
     // parse the opt to match each pane
@@ -427,27 +431,25 @@ var Manager = (function() {
     /**
      *  parse the given option items
      *  @param {{menukey:menuObj},...} items
-     *  @param {string} belonging key of menupane
-     *  @param {string} key of the previous layer
+     *  @param {string} key  belonging key of menupane
+     *  @param {string} prev key of the previous layer (null if it is the root pane )
      */
     parseOptionItems: function(items, key, prev) {
       var ctx = this; // CtxMenu instance
-      var conf, c;
-      c = ctx.c[key] = {
-        items: {},
-        prev: prev  // null if it is the root pane
-      };
+      var conf, cond, c;
+
+      c = ctx.c[key] = { items: {},  prev: prev };
+      cond = ctx.cond ;
 
       Object.keys(items).forEach(function(sk, idx) {
-
-        if(/^sep/.test(sk)) { // separator
-          conf = {sep:true};
+        // constraint meet
+        if(cond && items[sk].cond) {
+          return; // continue
         }
-        else {
-          conf = CtxMenu.extractConfig(sk, items[sk]);
-          if(conf.hasNext) {
-            ctx.parseOptionItems.call(ctx, items[sk].items, sk, key);
-          }
+
+        conf = CtxMenu.extractConfig(sk, items[sk]);
+        if(conf.hasNext) {
+          ctx.parseOptionItems.call(ctx, items[sk].items, sk, key);
         }
 
         c.items[sk] = conf;
@@ -506,7 +508,7 @@ var Manager = (function() {
     if (excludeObj) {
 
       // beforehand check must pass to go on
-      if (excludeObj.before && !excludeObj.before(target)) {
+      if (excludeObj.before && !excludeObj.before(e)) {
         return;
       }
 
@@ -571,25 +573,28 @@ var Manager = (function() {
 
   // parse menu options
   CtxMenu.extractConfig = function(mkey, m) {
-    var disable = m.disable ? m.disable : false;
+    var conf = {
+      text:m.text,
+      key: mkey,
+      disable: (m.disable)? m.disable : false,
+    };
+
+    // need menu separator
+    if(m.sepline) {
+      conf.sep = m.sepline;
+    }
 
     // has sublayer
     if(m.items) {
-      return {
-        text: m.text,
-        key:mkey,
-        hasNext: true,
-        disable: disable
-      };
+      conf.hasNext = true;
     }
 
-    // regular menu item
-    return  {
-      text: m.text,
-      key:mkey,
-      action: m.action||null,
-      disable: disable
-    };
+    // action registered
+    if(!m.items && m.action && typeof m.action==='function') {
+      conf.action = m.action;
+    }
+
+    return conf;
   };
   CtxMenu.build = function(ctxmenu) {
     var conf = ctxmenu.c;
@@ -610,8 +615,8 @@ var Manager = (function() {
     }
 
     ctxMenu.active({
-      left: evt.clientX,
-      top: evt.clientY
+      left: evt.pageX,
+      top: evt.pageY
     });
 
     $(document).one('click mousedown', function() {

@@ -19,16 +19,16 @@
       border: 1px solid #eee;
       border-bottom: 2px solid #ccc;
       min-height: 150px;
-      padding: 5px 8px;
+      padding: 15px 8px;
     }
     section.sec h3 {font-family: monospace; color: green;}
     div.rect {
-      width:50%; height: 80px;
+      width:500px; height: 120px;
       padding: 6px 3px; border: 1px solid orange;
       color: #61210B;
       background-color: #F5DA81;
-      margin: 6px 5px;
-      margin-left: 25%;
+      margin: 6px 10px;
+      display: inline-block;
     }
     .fill {width:90%; display: inline-block; margin-top: 3px;}
 
@@ -42,46 +42,74 @@
       <input class='fill' type="text" placeholder='native context-menu here' />
       <textarea class='fill' name="txtarea" style='resize:none;' cols="30" rows="3">native context-menu here, too</textarea>
     </div>
+    <div class="rect ctx2">
+      <h3>another context menu here</h3>
+    </div>
 
   </section>
 
 </body>
 <script>
 function bindContextmenu() {
-  var node = $('.ctxmenu-demo');
-  var config = {
+
+  var c1 = {
     items: {
-      cut: {text: '剪下'},
-      cpoy:{text: '複製'},
-      sep1:{},
-      paste: {text: '貼上'},
-      pasetspecial: {text: '選擇性貼上',
+      cut: {text: 'cut', cond:true },
+      cpoy:{text: 'copy',sepline:true },
+      paste: {text: 'paste', cond:true, sepline:true },
+      pasetspecial: {
+        text: 'paste special',
         items:{
-          pastevalue:{text:'僅貼上值'},
-          pasteformat:{text:'僅貼上格式', action:function() { press('pasteformat');} },
-          pastexborder:{text:'全部貼上但框線除外'},
-          pastefomula:{text:'僅貼上公式'}
-        }
+          pastevalue:{text:'value only'},
+          pasteformat:{text:'format only', action:function() { press('pasteformat');} },
+          pastexborder:{text:'all but border'},
+          pastefomula:{text:'formula only'}
+        },
+        cond:true,
+        sepline:true  // separator
       },
-      sep2:{},
-      del: {text: '刪除...', disable:true},
-      clear: {text: '清除內容'}
+
+      del: {text: 'delete...', disable:true},
+      clear: {text: 'clear', disable:true}
     },
 
     // global exception list
     keepnative:{
       tags: ['INPUT', 'TEXTAREA']
+    },
+
+    // constraint condition
+    // cond: true
+  };
+
+  var c2 = {
+    items: {
+      xxx: {text: 'xxx', cond:true },
+      yyy:{text: 'yyy'},
+      zzz: {text: 'zzz', cond:true, sepline:true },
+      XxYy: {text: 'XxYy', cond:true}
     }
   };
 
-  var cmMain = Manager.add('cm-main', config);
+  c1.cond = true;
+  var cmMain = Manager.add('cm-main', c1);
+  var cmSub = Manager.add('cm-sub', c2);
 
   cmMain.bindTarget('.ctxmenu-demo', {
-    excep:{tags:['INPUT', 'TEXTAREA'], classes:['excep']},
+    excep:{tags:['INPUT', 'TEXTAREA'], classes:['excep', 'ctx2']},
     noctxmenu:{classes:['noctx']}
   });
 
-  cmMain.setMenuEnable('clear', false);
+  cmSub.bindTarget('.ctx2', {
+    // preAction before real right-click action
+    // return false to stop execution
+    before:function(e) {
+      // console.log('ctx2', e);
+      return true;
+    }
+  });
+
+  // cmMain.setMenuEnable('clear', false);
 }
 
 bindContextmenu();

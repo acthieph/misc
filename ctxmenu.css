@@ -27,8 +27,7 @@
 /* menu separator */
 .ctx-menu .cm-sep {
     border-top: 1px solid #ebebeb;
-    margin-top: 6px;
-    margin-bottom: 6px;
+    margin: 3px 0;
 }
 
 /* menu item */
