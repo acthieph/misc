@@ -311,6 +311,7 @@ var Manager = (function() {
     opt.parent = this.parent;
 
     this.rootId = id;
+    this.rootPane = null;
     this.c = {}; // parsed config
     this.panes = {};
     this.activePanes = [];
@@ -331,10 +332,13 @@ var Manager = (function() {
     // parse the opt to match each pane
     this.parseOptionItems(opt.items, this.rootId, null);
 
-    // create panes
-    CtxMenu.build(this);
+    // build menu panes iff exists parsed items
+    if(Object.keys(this.c[id].items).length > 0) {
+      // create panes
+      CtxMenu.build(this);
+      this.rootPane = this.panes[this.rootId];
+    }
 
-    this.rootPane = this.panes[this.rootId];
   };
 
   CtxMenu.prototype = {
@@ -607,9 +611,9 @@ var Manager = (function() {
   };
   CtxMenu.onContextMenu = function(ctxMenu, evt) {
     if (!ctxMenu.rootPane) {
-      console.warn('ctx menu miss rootPane', ctxMenu);
       return;
     }
+
     if (ctxMenu.activePanes.length) {
       ctxMenu.disactive();
     }

@@ -55,8 +55,8 @@ function bindContextmenu() {
   var c1 = {
     items: {
       cut: {text: 'cut', cond:true },
-      cpoy:{text: 'copy',sepline:true },
-      paste: {text: 'paste', cond:true, sepline:true },
+      cpoy:{text: 'copy'},
+      paste: {text: 'paste', cond:true},
       pasetspecial: {
         text: 'paste special',
         items:{
@@ -69,8 +69,8 @@ function bindContextmenu() {
         sepline:true  // separator
       },
 
-      del: {text: 'delete...', disable:true},
-      clear: {text: 'clear', disable:true}
+      del: {text: 'delete...', disable:true, cond:true},
+      clear: {text: 'clear', disable:true, cond:true}
     },
 
     // global exception list
@@ -85,7 +85,7 @@ function bindContextmenu() {
   var c2 = {
     items: {
       xxx: {text: 'xxx', cond:true },
-      yyy:{text: 'yyy'},
+      yyy:{text: 'yyy', disable:true},
       zzz: {text: 'zzz', cond:true, sepline:true },
       XxYy: {text: 'XxYy', cond:true}
     }
