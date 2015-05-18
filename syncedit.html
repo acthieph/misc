@@ -52,6 +52,9 @@
     }
     .desc ul {list-style: none;}
     .desc ul li {padding: 5px 0; padding-left: 10px;}
+    .desc ul li strong {font-size: 1.1rem;}
+    .desc ul li em {font-size: 1rem;  color: green;}
+    .desc ul li p { margin: 3px 0px; padding-left: 0.5rem; color: #666;}
 
     div.log {
       position: fixed;
@@ -100,12 +103,23 @@
         <li><code>var text = x.textContent || x.innerText</code></li>
       </ul>
 
-      <p class="ptitle">keypress, keydown, keyup </p>
+      <p class="ptitle">keydown ---> keypress --> keyup</p>
       <ul>
-        <li>keydown ---> keypress --> keyup</li>
-        <li>special key(delete[8], tab[9]....) 不會觸發 key press</li>
-        <li>空白：keydown=keypress=32,   ENTER: keydown=keypress = 13</li>
-        <li>keydown 取得的 keyCode 不區分 大小寫</li>
+        <li>
+          <strong>KEYDOWN</strong> is triggered for every key press and gives <em>scan-code</em> <br><br>
+          <strong>KEYPRESS</strong> is triggered for character keys only, and gives <em>char-code</em>
+        </li>
+        <li><strong>KeyboardEvent.keyCode: </strong> the scan-code of the key
+          <p>cares about the key, not the resulting character</p>
+          <p>-- SPACE：keydown=keypress=32,   ENTER: keydown=keypress = 13</p>
+          <p>-- keyCode from keydown ignores case ('a' or 'A' gets same keyCode)</p>
+        </li>
+        <li><strong>KeyboardEvent.charCode: </strong>the unicode character code, only given in a keypress event</li>
+        <li><strong>KeyboardEvent.which: </strong> the hybrid of charCode and keyCode (non-standard)</li>
+        <li><strong>KeyboardEvent.shiftKey(ctrlKey|altKey|metaKey)</strong>: Shift, Ctrl, Alt or Command (mac only)</li>
+        <li><a href="http://javascript.info/tutorial/keyboard-events">http://javascript.info/tutorial/keyboard-events</a><br>
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent">MDN.KeyboardEvent</a>
+        </li>
       </ul>
       <p class="ptitle">...</p>
       <p><span>onfocus event does not bubble !?</span></p>
@@ -210,6 +224,12 @@
       return str;
     }
 
+    function logkey(evt) {
+      var LOG = false;
+      if(LOG) {
+        console.log('['+evt.type + '] keyCode/charCode/which: ' + evt.keyCode + '/' + evt.charCode + '/' + evt.which);
+      }
+    }
     document.addEventListener('keyup', function(evt) {
       // update input
       if(editable.focus) {
@@ -223,7 +243,12 @@
         editdiv.textContent = (inputbox.value).replace(/\n/g, '<br>');
       }
 
+      else {
+        logkey(evt);
+      }
+
     });
+    document.addEventListener('keypress', logkey, false);
     document.addEventListener('keydown', function(evt) {
       var keycode = evt.keyCode;
 
@@ -247,9 +272,9 @@
         editable.ele.focus();
       }
 
-      // else {
-      //   console.log('keycode: ' + keycode)
-      // }
+      else {
+        logkey(evt);
+      }
 
 
     }, false);
