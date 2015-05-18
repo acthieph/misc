@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Simple Test</title>
   <style>
-    html, body, div, section, header, h2, h4, ul, li {
+    html, body, div, section, header, h2, h3, ul, li {
       margin: 0px;
       padding: 0;
     }
@@ -19,8 +19,9 @@
       background: rgba(230,255,215, 0.9);
       border-bottom: 1px solid #E6FFD7;
       font-family:verdana,sans-serif;
-      font-size: 1.2rem; color: #00882D;
     }
+    header h3 {font-size: 1.2rem; color: #00882D;}
+    header .subtitle { font-size: 0.9rem; color: #00992d;}
 
     .ptitle {
       padding: 5px 2px 6px 0px;
@@ -29,6 +30,7 @@
     }
     .container {
       padding: 5px 8px;
+      margin-bottom: 30px;
     }
     .inputwrap, .editdivwrap {
       margin: 10px auto;
@@ -52,23 +54,33 @@
     .desc ul li {padding: 5px 0; padding-left: 10px;}
 
     div.log {
-      position: absolute;
+      position: fixed;
       bottom: 0px;
       height: 30px;
       left: 0px;
       right: 0px;
       padding-left: 1rem;
-      background: #DEDEDE;
+      background: rgba(255,255,255,0.9);
+      border-top: 2px solid #999;
     }
-    div.log div { height: 28px; position: absolute;}
-    .logmsg {width: 70%;}
-    .logele {width: 25%; right: 0; color: red; padding:6px 2px 2px; }
+    div.log div {
+      height: 28px;
+      position: absolute;
+      font-size: 14px;
+      line-height: 2;
+      color: #333;
+    }
+    .logmsg {width: 70%; left: 11%;}
+    .log .logele {width: 10%; left: 1rem; color: red; }
 
   </style>
 </head>
 <body>
   <header>
-    Sync input.value with innerHTML of an editable Elem
+    <h3>Sync input.value with innerHTML of an editable Elem</h3>
+    <span class='subtitle'>
+      TODO: conversion from input value to to editable innerHTML
+    </span>
   </header>
   <div class="container">
     <div class="editdivwrap">
@@ -105,10 +117,10 @@
       // ALSO TO SUBSTITUTE DIV MARKUP TO \N
     </pre>
     </div>
-    <div class="log">
-      <div id="log-msg" class='logmsg'></div>
-      <div class='logele'><span id="log-ele"></span></div>
-    </div>
+  </div>
+  <div class="log">
+    <div class='logele'><span id="log-ele"></span></div>
+    <div id="log-msg" class='logmsg'></div>
   </div>
   <script>
     var lgmsg = document.getElementById('log-msg');
@@ -118,7 +130,7 @@
     var focusElem = null;
 
     function logmsg(val) {
-      lgmsg.innerHTML = val;
+      lgmsg.textContent = val;
     }
     function logele(val) {
       lgele.textContent = '';
@@ -136,7 +148,7 @@
       if(!ele.lastChild||!ele.lastChild.nodeValue) {
         return;
       }
-      console.log(ele.lastChild)
+
       var range,selection;
       //Firefox, Chrome, Opera, Safari, IE 9+
       if(document.createRange) {
@@ -168,9 +180,6 @@
       onBlur();
     };
     inputbox.onfocus = function(e) {
-      var raw = editdiv.innerHTML;
-      // inputbox.value = raw.replace(/\n/g, "&lt;br /&gt;");
-      // log(editdiv.textContent);
       input.focus = true;
       onFocus(input);
     };
@@ -186,17 +195,18 @@
     function onBlur() {
       focusElem = null;
       logele();
+      logmsg('');
     }
 
     function parseContent(html) {
       var str;
-      str = html.replace('</div>', '');
-      str = str.replace('<div>', '\n');
-      str = str.replace('<br>', '\n');
-      str = str.replace('&nbsp;', ' ');
-      str = str.replace('&lt;', '<');
-      str = str.replace('&gt;', '>');
-      str = str.replace('&amp;', '&');
+      str = html.replace(/<\/div>/g, '');
+      str = str.replace(/<div>/g, '\n');
+      str = str.replace(/<br>/g, '\n');
+      str = str.replace(/&nbsp;/g, ' ');
+      str = str.replace(/&lt;/g, '<');
+      str = str.replace(/&gt;/g, '>');
+      str = str.replace(/&amp;/g, '&');
       return str;
     }
 
@@ -204,13 +214,13 @@
       // update input
       if(editable.focus) {
         editable.value = parseContent(editdiv.innerHTML);
-        logmsg(editable.value);
+        logmsg(editdiv.innerHTML);
         inputbox.value = editable.value;
       }
       // update editdiv
       else if(input.focus) {
         logmsg(inputbox.value);
-        editdiv.textContent = inputbox.value;
+        editdiv.textContent = (inputbox.value).replace(/\n/g, '<br>');
       }
 
     });
@@ -228,9 +238,19 @@
       }
 
       // enter, do nothing
-      if(keycode===13 && !evt.ctrlKey) {
+      else if(keycode===13) {
         halt();
       }
+
+      // F2
+      else if(keycode===113) {
+        editable.ele.focus();
+      }
+
+      // else {
+      //   console.log('keycode: ' + keycode)
+      // }
+
 
     }, false);
 
