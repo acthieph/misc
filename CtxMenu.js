@@ -1,14 +1,14 @@
 var Manager = (function() {
+
+  // central manager for CtxMenu instances
   var Manager = {
     items: [],
 
-    disactiveAll: function() {
-      this.items.forEach(function(cMenu) {
-        if (cMenu.isActive) {
-          cMenu.disactive();
-        }
-      });
-    }
+    // current active CtxMenu instance
+    curr: null,
+
+    // flag to show native context menu
+    showNative: false
   };
 
   /**
@@ -21,7 +21,8 @@ var Manager = (function() {
   var tkeepNatives = {
     ids: [],
     tags: [],
-    classes: []
+    classes: [],
+    attr:[]
   };
 
   function returnFalse() {
@@ -467,6 +468,8 @@ var Manager = (function() {
       Pane.show(this.rootPane, pos);
 
       this.activeStackPush(this.rootPane);
+
+      Manager.curr = this;
     },
     // disactive context menu
     disactive: function() {
@@ -476,6 +479,8 @@ var Manager = (function() {
         p.hide();
       });
       this.activePanes = [];
+
+      Manager.curr = null;
     },
     rebindTarget: function() {
       var cMenu = this;
@@ -493,22 +498,26 @@ var Manager = (function() {
       $(document).on('contextmenu', elem, function(e) {
         CtxMenu.processRightClick(cMenu, (e || window.event));
       });
-
-      $(document).on('contextmenu', function() {
-        if (!cMenu.halt) {
-          cMenu.disactive();
-          return;
-        }
-      });
     }
   };
   CtxMenu.processRightClick = function(ctxmenu, e) {
     var target = e.target;
     var excludeObj = ctxmenu.excludeObj;
 
-    Manager.disactiveAll();
-    ctxmenu.halt = false;
+    // disactive panes previous shown
+    if(Manager.curr) {
+      Manager.curr.disactive();
+    }
 
+    Manager.showNative = false;
+
+    // do nothing if target belongs to global exception list
+    if (CtxMenu.checkExclusion(tkeepNatives, target)) {
+      Manager.showNative = true;
+      return;
+    }
+
+    // check instance defined exceptions
     if (excludeObj) {
 
       // beforehand check must pass to go on
@@ -516,8 +525,9 @@ var Manager = (function() {
         return;
       }
 
-      // native context-menu is allowed on target
+      // native right-click behavior is allowed on target
       if (excludeObj.excep && CtxMenu.checkExclusion(excludeObj.excep, target)) {
+        Manager.showNative = true;
         return;
       }
 
@@ -529,7 +539,6 @@ var Manager = (function() {
       }
     }
 
-    ctxmenu.halt = true;
     CtxMenu.onContextMenu.call(this, ctxmenu, e);
   };
 
@@ -554,12 +563,23 @@ var Manager = (function() {
       return true;
     }
 
-    // check the list of class
-    var sz, lstExcep;
+    // check the class list
+    var i, sz, lstExcep;
     if ((sz = target.classList.length) > 0 && (lstExcep = list.classes) && list.classes.length > 0) {
-      for (var i = 0; i < sz; i++) {
+      for (i = 0; i < sz; i++) {
         if (lstExcep.indexOf(target.classList[i]) > -1) {
-          // console.log('match class ' + target.classList[i]);
+          return true;
+        }
+      }
+    }
+
+    // check the attribute list
+    var attr = null;
+    if(target.hasAttributes() && (lstExcep = list.attr) && (sz=lstExcep.length) > 0 ) {
+      for(i=0; i<sz; i++) {
+        attr = target.getAttribute(lstExcep[i]);
+        if(attr && attr==='true') {
+          //console.log('match attribute ' +lstExcep[i]);
           return true;
         }
       }
@@ -623,10 +643,6 @@ var Manager = (function() {
       top: evt.pageY
     });
 
-    $(document).one('click mousedown', function() {
-      ctxMenu.disactive();
-    });
-
     evt.preventDefault();
     evt.stopPropagation();
   };
@@ -650,18 +666,29 @@ var Manager = (function() {
     if (obj.classes && obj.classes.length > 0) {
       extendList(obj.classes, tkeepNatives.classes);
     }
+    if (obj.attr && obj.attr.length > 0) {
+      extendList(obj.attr, tkeepNatives.attr);
+    }
   };
 
   // prevent native contextmenu from appearing
-  // except the global keep-native list
+  // except showNative flag is set
   $(document).on('contextmenu', function(evt) {
     // allow native context menu
-    if (CtxMenu.checkExclusion(tkeepNatives, evt.target)) {
+    if (Manager.showNative) {
+      Manager.showNative = false;
       return;
     }
 
     evt.preventDefault();
     evt.stopPropagation();
+  });
+
+  $(document).on('mousedown click', function (e) {
+    // not right-click, dismiss panes
+    if(e.which!==3 && Manager.curr) {
+      Manager.curr.disactive();
+    }
   });
 
   // create and add a new CtxMenu

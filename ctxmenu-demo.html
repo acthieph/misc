@@ -23,15 +23,18 @@
     }
     section.sec h3 {font-family: monospace; color: green;}
     div.rect {
-      width:500px; height: 120px;
+      width:80%; height: 120px;
+      margin-left: 10%;
       padding: 6px 3px; border: 1px solid orange;
       color: #61210B;
       background-color: #F5DA81;
-      margin: 6px 10px;
+      margin-bottom: 20px;
       display: inline-block;
     }
+    .noctx.rect { height: 45px;}
     .fill {width:90%; display: inline-block; margin-top: 3px;}
-
+    .editable-div {height: 2.4rem; border:1px solid #fff; background: rgba(30,30,30, 0.6); padding-left: 0.5rem; color: #DEDEDE;}
+    *[contenteditable="true"], textarea {outline: none; overflow: auto;}
   </style>
 </head>
 <body>
@@ -39,11 +42,12 @@
     <h3>test context-menu here</h3>
     <div class="noctx rect">No context-menu here</div>
     <div class="rect">
-      <input class='fill' type="text" placeholder='native context-menu here' />
-      <textarea class='fill' name="txtarea" style='resize:none;' cols="30" rows="3">native context-menu here, too</textarea>
+      <input class='fill' type="text" placeholder='native context-menu on INPUT' />
+      <textarea class='fill' name="txtarea" style='resize:none;' cols="30" rows="2">native context-menu on TEXTAREA</textarea>
     </div>
     <div class="rect ctx2">
       <h3>another context menu here</h3>
+      <div class="editable-div fill" contenteditable="true">native context-menu on contenteditable block</div>
     </div>
 
   </section>
@@ -75,9 +79,9 @@ function bindContextmenu() {
 
     // global exception list
     keepnative:{
-      tags: ['INPUT', 'TEXTAREA']
-    },
-
+      tags: ['INPUT', 'TEXTAREA'],
+      attr: ['contenteditable']
+    }
     // constraint condition
     // cond: true
   };
@@ -88,19 +92,21 @@ function bindContextmenu() {
       yyy:{text: 'yyy', disable:true},
       zzz: {text: 'zzz', cond:true, sepline:true },
       XxYy: {text: 'XxYy', cond:true}
-    }
+    },
+
   };
 
-  c1.cond = true;
+  // c1.cond = true;
   var cmMain = Manager.add('cm-main', c1);
   var cmSub = Manager.add('cm-sub', c2);
 
   cmMain.bindTarget('.ctxmenu-demo', {
-    excep:{tags:['INPUT', 'TEXTAREA'], classes:['excep', 'ctx2']},
+    excep:{tags:['INPUT', 'TEXTAREA'], classes:['excep', 'ctx2'], attr: ['contenteditable']},
     noctxmenu:{classes:['noctx']}
   });
 
   cmSub.bindTarget('.ctx2', {
+
     // preAction before real right-click action
     // return false to stop execution
     before:function(e) {
