@@ -22,6 +22,9 @@
       padding: 15px 8px;
     }
     section.sec h3 {font-family: monospace; color: green;}
+    section.sec p.sub-desc {font-family: monospace; color: green; margin: 5px 0 15px 0.5rem;}
+    section.sec p.sub-desc span {display: block; padding: 5px 0;}
+    section.sec p.sub-desc code {font-family: monospace; color: #763B94; padding-left: 1rem;}
     div.rect {
       width:80%; height: 120px;
       margin-left: 10%;
@@ -39,7 +42,13 @@
 </head>
 <body>
   <section class="ctxmenu-demo sec">
-    <h3>test context-menu here</h3>
+    <h3>demo section for context-menu</h3>
+    <p class='sub-desc'>
+      <span>By default, native context-menu is disabled in the whole document.<br>
+      To globally allow native context-menu on specific elements, we define tags, ids, classes or attributes list in the config object</span>
+      <code> keepnative:{ tags: ['INPUT', 'TEXTAREA'], attr: ['contenteditable'] }</code><br>
+      <span>If we want native right-click behaviors on the ctx-menu binded region, add list when <mark>bindTarget()</mark> is called</span>
+    </p>
     <div class="noctx rect">No context-menu here</div>
     <div class="rect">
       <input class='fill' type="text" placeholder='native context-menu on INPUT' />
@@ -51,7 +60,13 @@
     </div>
 
   </section>
-
+  <section class="sec outer">
+    <h3>Outside the demo section</h3>
+    <p class='sub-desc'>
+      <span>Since the INPUT tag is defined in the global exception list, right-click on input allows native context-menu</span>
+    </p>
+    <input type="text" placeholder='Native context-menu should work here' style='min-width: 320px; font-size: 1rem; padding: 3px 2px 3px 3px; font-family: monospace;' />
+  </section>
 </body>
 <script>
 function bindContextmenu() {

@@ -674,9 +674,15 @@ var Manager = (function() {
   // prevent native contextmenu from appearing
   // except showNative flag is set
   $(document).on('contextmenu', function(evt) {
-    // allow native context menu
+
+    // showNative is set within the bubbling to allow native right-click behavior
     if (Manager.showNative) {
       Manager.showNative = false;
+      return;
+    }
+
+    // do not block if right-click target meets exception
+    if (CtxMenu.checkExclusion(tkeepNatives, evt.target)) {
       return;
     }
 
