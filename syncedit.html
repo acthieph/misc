@@ -55,6 +55,8 @@
     .desc ul li strong {font-size: 1.1rem;}
     .desc ul li em {font-size: 1rem;  color: green;}
     .desc ul li p { margin: 3px 0px; padding-left: 0.5rem; color: #666;}
+    .desc ul li ul { padding-left: 0.5rem; color: #0489B1;}
+    .desc ul li ul li code {color: #0B4C5F;}
 
     div.log {
       position: fixed;
@@ -95,6 +97,39 @@
       <input type="text">
     </div>
     <div class="desc">
+      <p class="ptitle">Selection, Range (>=IE9)</p>
+      <ul>
+        <li><strong>Selection </strong>
+           object represents the <em>ranges</em> that the user has selected. Typically, it holds only one range, accessed via:
+          <p>
+            <code>var selObj = window.getSelection(); // a Selection object </code><br>
+            <code>var range  = selObj.getRangeAt(0); // a Range object</code>
+          </p>
+          <ul>
+            <li><code>toString()</code> returns the text contained in the selection</li>
+            <li><code>anchor</code> is the beginning point of the selection</li>
+            <li><code>focus</code> is the end point of the selection.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Range</strong> represents a fragment of a document that can contain nodes and parts of text nodes. It is created via <code>document.createRange()</code> or <code>getRangeAt() </code> of a Selection object
+          <p>Readonly attributes:</p>
+          <ul>
+            <li><code>Range.collapsed</code> indicates whether the start and end points of the range are in the same position</li>
+            <li><code>Range.endContainer</code> is the range ending node; <code>Range.endOffset</code> is the offset of the ending node </li>
+            <li><code>Range.startContainer</code> is the started node of the range ; <code>Range.startOffset</code></li>
+          </ul>
+          <p>Methods</p>
+          <ul>
+            <li><code>Range.selectNode(node)</code> sets the Range to contain the contents of the node including the node</li>
+            <li><code>Range.selectNodeContents(node)</code> sets the Range to contain the contents of the node</li>
+            <li><code>Range.collapse(toStart) </code> collapses the Range to one of its boundary points. (true collapses the Range to its start, false to its end)</li>
+            <li><code> Range.toString()</code> is a stringifier returning the text of the Range</li>
+            <li><code>Range.setStart(startNode, startOffset)</code>, <code>Range.setEnd(endNode, endOffset)</code>  set the range's boundary points</li>
+          </ul>
+
+        </li>
+      </ul>
       <p class="ptitle">innerHTML, innerText, textContent</p>
       <ul>
         <li><b>innerText</b> 和 <b>textContent</b> 均為對 innerHTML 的内容作不同處理而成</li>
@@ -109,10 +144,11 @@
           <strong>KEYDOWN</strong> is triggered for every key press and gives <em>scan-code</em> <br><br>
           <strong>KEYPRESS</strong> is triggered for character keys only, and gives <em>char-code</em>
         </li>
-        <li><strong>KeyboardEvent.keyCode: </strong> the scan-code of the key
-          <p>cares about the key, not the resulting character</p>
-          <p>-- SPACE：keydown=keypress=32,   ENTER: keydown=keypress = 13</p>
-          <p>-- keyCode from keydown ignores case ('a' or 'A' gets same keyCode)</p>
+        <li><strong>KeyboardEvent.keyCode: </strong> the scan-code of the key, caring about the <strong>key</strong>, not the resulting character.
+          <ul>
+            <li>SPACE：keydown=keypress=32,   ENTER: keydown=keypress = 13</li>
+            <li>keyCode from keydown ignores case ('a' or 'A' gets same keyCode)</li>
+          </ul>
         </li>
         <li><strong>KeyboardEvent.charCode: </strong>the unicode character code, only given in a keypress event</li>
         <li><strong>KeyboardEvent.which: </strong> the hybrid of charCode and keyCode (non-standard)</li>
@@ -163,12 +199,15 @@
         return;
       }
 
-      var range,selection;
+      var range, selection, node = ele.lastChild;
       //Firefox, Chrome, Opera, Safari, IE 9+
       if(document.createRange) {
-        range = document.createRange();//Create a range (a range is a like the selection but invisible)
-        range.setStart(ele.lastChild, ele.lastChild.nodeValue.length);
-        range.collapse(true);
+        range = document.createRange();// Create a range (a range is a like the selection but invisible)
+        range.setStart(node, node.nodeValue.length);
+        range.setEnd(node, node.nodeValue.length);
+        // or simply
+        //range.selectNodeContents(ele);
+        range.collapse(false);
         selection = window.getSelection();//get the selection object (allows you to change selection)
         selection.removeAllRanges();//remove any selections already made
         selection.addRange(range);//make the range you have just created the visible selection
