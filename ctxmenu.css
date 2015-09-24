@@ -32,7 +32,6 @@
 
 /* menu item */
 .ctx-menu .cm-item {
-    width: 100%;
     padding: 6px 5rem 6px 16px;
     color: #333;
     cursor: pointer;
